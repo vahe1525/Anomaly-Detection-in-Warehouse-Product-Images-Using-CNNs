@@ -9,8 +9,6 @@ class WoodAnomalyDataset(Dataset):
     և մեր նեյրոնային ցանցի միջև:
     """
     def __init__(self, dataframe, transform=None):
-        # dataframe: Մեր CSV մատյանն է (image_path, label)
-        # transform: Մշակման քայլերի հերթականությունը
         self.dataframe = dataframe
         self.transform = transform
 
