@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c5b10988-c46c-408f-9d09-1d3a1ac13779</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Course_Work_2.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,7 +23,9 @@
   <ItemGroup>
     <Compile Include="Course_Work_2.py" />
     <Compile Include="DataManager.py" />
+    <Compile Include="main.py" />
     <Compile Include="MetadataPreparer.py" />
+    <Compile Include="model.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
