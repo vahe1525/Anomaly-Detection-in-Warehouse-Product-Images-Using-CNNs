@@ -22,10 +22,11 @@ class WoodAnomalyDetector(nn.Module):
         # Վերջնական որոշման մասը (Classifier)
         self.classifier = nn.Sequential(
             nn.Flatten(),                              #Linearing
-            nn.Linear(32 * 56 * 56, 128),             
+            nn.Linear(32 * 56 * 56, 128),
             nn.ReLU(),
-            nn.Linear(128, 1),                        
-            nn.Sigmoid()                               
+            nn.Dropout(p=0.5),                        # Dropout to prevent overfitting
+            nn.Linear(128, 1),
+            nn.Sigmoid()
         )
 
     def forward(self, x):

@@ -17,8 +17,15 @@ class WoodAnomalyEngine:
         self.model = WoodAnomalyDetector().to(self.device)
         self.criterion = nn.BCELoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=0.0001)
+        # Halves LR when val_loss doesn't improve for 3 epochs
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            self.optimizer, mode='min', factor=0.5, patience=3)
 
-    def fit(self, train_loader, val_loader, epochs=10):
+    def fit(self, train_loader, val_loader, epochs=30, patience=5):
+        best_val_loss = float('inf')
+        patience_counter = 0
+        best_model_state = None
+
         for epoch in range(epochs):
             self.model.train()
             running_loss = 0.0
@@ -30,9 +37,29 @@ class WoodAnomalyEngine:
                 loss.backward()
                 self.optimizer.step()
                 running_loss += loss.item()
-            
+
             val_loss, val_acc = self.evaluate(val_loader)
-            print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss/len(train_loader):.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
+            current_lr = self.optimizer.param_groups[0]['lr']
+            print(f"Epoch {epoch+1}/{epochs}, Loss: {running_loss/len(train_loader):.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}, LR: {current_lr:.6f}")
+
+            self.scheduler.step(val_loss)
+
+            # Early stopping
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                patience_counter = 0
+                best_model_state = {k: v.clone() for k, v in self.model.state_dict().items()}
+            else:
+                patience_counter += 1
+                print(f"  No improvement. Patience: {patience_counter}/{patience}")
+                if patience_counter >= patience:
+                    print(f"Early stopping at epoch {epoch+1}. Best val loss: {best_val_loss:.4f}")
+                    break
+
+        # Restore the best weights found during training
+        if best_model_state is not None:
+            self.model.load_state_dict(best_model_state)
+            print(f"Restored best model weights (val_loss={best_val_loss:.4f})")
 
     def evaluate(self, test_loader):
         self.model.eval()
@@ -71,21 +98,30 @@ def main():
     train_df, val_df = train_test_split(train_df, test_size=0.1, stratify=train_df['label'], random_state=42)
 
     # 3. Data Loaders
-    transform = transforms.Compose([
+    train_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomRotation(15),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    eval_transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    train_loader = DataLoader(WoodAnomalyDataset(train_df, transform), batch_size=32, shuffle=True)
-    val_loader = DataLoader(WoodAnomalyDataset(val_df, transform), batch_size=32)
-    test_loader = DataLoader(WoodAnomalyDataset(test_df, transform), batch_size=32)
+    train_loader = DataLoader(WoodAnomalyDataset(train_df, train_transform), batch_size=32, shuffle=True)
+    val_loader = DataLoader(WoodAnomalyDataset(val_df, eval_transform), batch_size=32)
+    test_loader = DataLoader(WoodAnomalyDataset(test_df, eval_transform), batch_size=32)
 
     # 4. Training and Evaluation
     engine = WoodAnomalyEngine()
-    engine.fit(train_loader, val_loader, epochs=7)
+    engine.fit(train_loader, val_loader, epochs=30, patience=3)
     test_loss, test_acc = engine.evaluate(test_loader)
-    print(f"Final Test Accuracy: {test_acc:.4f}")
+    print(f"\nFinal Test Loss: {test_loss:.4f}, Final Test Accuracy: {test_acc:.4f}")
 
 if __name__ == '__main__':
     main()
