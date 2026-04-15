@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from torchvision import transforms
 import pandas as pd
 from PIL import Image
@@ -113,7 +113,18 @@ def main():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    train_loader = DataLoader(WoodAnomalyDataset(train_df, train_transform), batch_size=32, shuffle=True)
+    # WeightedRandomSampler — gives anomaly images higher pick probability
+    # so each batch sees roughly 50% good / 50% anomaly despite the 260 vs 60 imbalance
+    class_counts = train_df['label'].value_counts()          # {0: ~210, 1: ~48}
+    class_weights = 1.0 / class_counts                       # minority gets higher weight
+    sample_weights = train_df['label'].map(class_weights).values
+    sampler = WeightedRandomSampler(
+        weights=torch.tensor(sample_weights, dtype=torch.float),
+        num_samples=len(sample_weights),
+        replacement=True                                     # allows reusing anomaly images
+    )
+    # note: sampler and shuffle=True are mutually exclusive — sampler handles ordering
+    train_loader = DataLoader(WoodAnomalyDataset(train_df, train_transform), batch_size=32, sampler=sampler, shuffle = False)
     val_loader = DataLoader(WoodAnomalyDataset(val_df, eval_transform), batch_size=32)
     test_loader = DataLoader(WoodAnomalyDataset(test_df, eval_transform), batch_size=32)
 
