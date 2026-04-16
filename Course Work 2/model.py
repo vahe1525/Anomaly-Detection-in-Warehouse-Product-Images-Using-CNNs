@@ -19,10 +19,17 @@ class WoodAnomalyDetector(nn.Module):
             nn.MaxPool2d(2)                            # 112x112 -> 56x56
         )
 
+        self.block3 = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),  # 32->64
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2)                            # 56x56 -> 28x28
+        )
+
         # Վերջնական որոշման մասը (Classifier)
         self.classifier = nn.Sequential(
             nn.Flatten(),                              #Linearing
-            nn.Linear(32 * 56 * 56, 128),
+            nn.Linear(64 * 28 * 28, 128),
             nn.ReLU(),
             nn.Dropout(p=0.5),                        # Dropout to prevent overfitting
             nn.Linear(128, 1),
@@ -32,5 +39,6 @@ class WoodAnomalyDetector(nn.Module):
     def forward(self, x):
         x = self.block1(x)
         x = self.block2(x)
+        x = self.block3(x)
         x = self.classifier(x)
         return x

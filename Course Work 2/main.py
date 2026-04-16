@@ -16,7 +16,7 @@ class WoodAnomalyEngine:
         self.device = device
         self.model = WoodAnomalyDetector().to(self.device)
         self.criterion = nn.BCELoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.0001)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=0.0003)
         # Halves LR when val_loss doesn't improve for 3 epochs
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
             self.optimizer, mode='min', factor=0.5, patience=3)
@@ -86,6 +86,8 @@ class WoodAnomalyEngine:
         return "Anomaly" if output.item() > 0.5 else "Good"
 
 def main():
+    torch.manual_seed(42)
+
     # 1. Preparation
     if not os.path.exists('wood_metadata.csv'):
         df = prepare_wood_metadata('data/wood')
@@ -130,7 +132,7 @@ def main():
 
     # 4. Training and Evaluation
     engine = WoodAnomalyEngine()
-    engine.fit(train_loader, val_loader, epochs=30, patience=3)
+    engine.fit(train_loader, val_loader, epochs=30, patience=8)
     test_loss, test_acc = engine.evaluate(test_loader)
     print(f"\nFinal Test Loss: {test_loss:.4f}, Final Test Accuracy: {test_acc:.4f}")
 
