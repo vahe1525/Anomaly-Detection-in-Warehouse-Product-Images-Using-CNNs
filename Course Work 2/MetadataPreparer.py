@@ -28,7 +28,6 @@ def prepare_wood_metadata(root_path):
 
 if __name__ == '__main__':
     # This block only runs when you execute MetadataPreparer.py directly.
-    # It does NOT run when main.py imports prepare_wood_metadata from this file.
     df = prepare_wood_metadata('data/wood')
 
     print("First 5 rows:")

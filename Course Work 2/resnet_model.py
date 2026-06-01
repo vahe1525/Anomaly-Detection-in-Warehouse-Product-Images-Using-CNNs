@@ -7,13 +7,7 @@ class WoodResNetDetector(nn.Module):
     """
     Transfer Learning model based on ResNet18 pretrained on ImageNet.
 
-    Instead of learning features from scratch (like WoodAnomalyDetector),
-    this model starts with ResNet18 weights already trained on 1.2 million
-    images. It already understands textures, edges, and shapes. We only
-    replace the final classification layer to adapt it to our binary task:
-    Good (0) vs Anomaly (1).
-
-    Architecture:
+       Architecture:
         ResNet18 backbone (pretrained, 18 conv layers, 512 output features)
             ↓
         Dropout(0.4)       — regularization, prevents overfitting
@@ -32,7 +26,7 @@ class WoodResNetDetector(nn.Module):
 
         # Remove the original final layer (it outputs 1000 classes for ImageNet)
         # and replace it with our own binary classifier head
-        num_features = backbone.fc.in_features  # 512 for ResNet18
+        num_features = backbone.fc.in_features 
 
         backbone.fc = nn.Sequential(
             nn.Dropout(p=0.4),

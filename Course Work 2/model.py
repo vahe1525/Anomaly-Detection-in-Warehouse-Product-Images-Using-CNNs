@@ -16,9 +16,6 @@ class WoodAnomalyDetector(nn.Module):
     def __init__(self):
         super(WoodAnomalyDetector, self).__init__()
 
-        # Each block doubles the number of feature maps while halving spatial size.
-        # More filters = more pattern types detected.
-        # Smaller spatial size = each filter covers a larger area of the image.
 
         self.block1 = nn.Sequential(
             nn.Conv2d(3, 16, kernel_size=3, padding=1),  # 224×224 → 224×224, 3 ch → 16 ch
@@ -43,10 +40,10 @@ class WoodAnomalyDetector(nn.Module):
 
         # Classifier: takes the flattened feature maps and produces a single output
         self.classifier = nn.Sequential(
-            nn.Flatten(),                  # [batch, 64, 28, 28] → [batch, 50176]
+            nn.Flatten(),              
             nn.Linear(64 * 28 * 28, 128),
             nn.ReLU(),
-            nn.Dropout(p=0.5),             # randomly zeros 50% of neurons during training
+            nn.Dropout(p=0.5),         
             nn.Linear(128, 1),
             nn.Sigmoid()                   # output: probability [0.0, 1.0]
         )
