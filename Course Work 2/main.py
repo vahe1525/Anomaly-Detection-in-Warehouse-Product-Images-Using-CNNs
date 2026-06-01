@@ -130,6 +130,14 @@ class WoodAnomalyEngine:
 
         return history
 
+    # ── Save / load ──────────────────────────────────────────────────────────────
+    def save(self, path=None):
+
+        if path is None:
+            path = f'{self.model_type}_model.pth'
+        torch.save(self.model.state_dict(), path)
+        print(f"Saved model weights: {path}")
+
     # ── Evaluation ─────────────────────────────────────────────────────────────
 
     def evaluate(self, loader):
@@ -373,6 +381,9 @@ def main():
     engine.plot_training_curves(history)
     engine.plot_confusion_matrix(test_loader)
     engine.plot_sample_predictions(test_df, eval_transform, n=8)
+
+    # ── 8. Save the trained model ────────────────────────────────────────────────
+    engine.save()
 
 
 if __name__ == '__main__':
