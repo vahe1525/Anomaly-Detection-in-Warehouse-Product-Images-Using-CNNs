@@ -25,16 +25,17 @@ def prepare_wood_metadata(root_path):
     
     return pd.DataFrame(data)
 
-df = prepare_wood_metadata('data/wood')
 
-# Ստուգում ենք արդյունքը
-print("first  5 lines of csv.")
-print(df.head())
+if __name__ == '__main__':
+    # This block only runs when you execute MetadataPreparer.py directly.
+    # It does NOT run when main.py imports prepare_wood_metadata from this file.
+    df = prepare_wood_metadata('data/wood')
 
-print("\ndefect type and count.")
-print(sum(df[df['label'] == 1]['parent_folder'].value_counts()))
-# print(df[df['label'] == 0]['parent_folder'].value_counts())
+    print("First 5 rows:")
+    print(df.head())
+    print(f"\nTotal anomaly images: {sum(df[df['label'] == 1]['parent_folder'].value_counts())}")
 
-df.to_csv('wood_metadata.csv', index=False)
+    df.to_csv('wood_metadata.csv', index=False)
+    print("\nSaved: wood_metadata.csv")
 
 
