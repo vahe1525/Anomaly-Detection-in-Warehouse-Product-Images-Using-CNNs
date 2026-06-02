@@ -28,9 +28,6 @@ from model import WoodAnomalyDetector           # custom CNN
 from resnet_model import WoodResNetDetector     # ResNet18 transfer learning
 
 
-# The eval transform MUST be identical to the one used during training/evaluation
-# in main.py — same resize and same ImageNet normalization. If these differ, the
-# model sees inputs scaled differently than it learned on and predictions break.
 eval_transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -83,7 +80,7 @@ def predict_image(model, image_path, device):
 
 def collect_image_paths(target):
     """Return a list of image paths from either a single file or a folder."""
-    valid_ext = ('.png', '.jpg', '.jpeg', '.bmp')
+    valid_ext = ('.png', '.jpg', '.jpeg', '.bmp', '.avif')
     if os.path.isdir(target):
         paths = [os.path.join(target, f) for f in sorted(os.listdir(target))
                  if f.lower().endswith(valid_ext)]
