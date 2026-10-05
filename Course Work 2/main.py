@@ -365,6 +365,7 @@ def main():
     epochs   = 20 if MODEL_TYPE == 'resnet' else 30
     patience = 8  
 
+
     engine  = WoodAnomalyEngine(model_type=MODEL_TYPE)
     history = engine.fit(train_loader, val_loader, epochs=epochs, patience=patience)
 
